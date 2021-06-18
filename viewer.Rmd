@@ -1,15 +1,26 @@
 ---
 title: "Viewer"
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo=FALSE}
 library(readr)
 library(plotly)
 
-urlfile="https://raw.githubusercontent.com/karolbuda/PTE_viewer/main/d1_1.csv"
+urlfile="https://raw.githubusercontent.com/karolbuda/temp/main/d1_1.csv"
 
 d1_1<-read_csv(url(urlfile))
+
+d1_1 = d1_1 %>%
+  mutate(positions = factor(positions, levels = unique(positions)),
+         cond = factor(cond, levels = c("2NH", "acetate", "butyrate", "DHC", "TBBA", "POE", "POM", "PTE", "PTM"))) %>%
+  arrange(positions, cond) %>%
+  mutate(dummy_x = factor(dummy_x, levels = unique(dummy_x)))
 
 highlight_df_1 = d1_1 %>% filter(mut == 1) 
 
@@ -23,18 +34,21 @@ p = ggplot(d1_1, aes(x = dummy_x, y = effects, color = cond, identity = identity
     #stat_summary(fun=mean, colour="black", geom="crossbar", width=0.2, position=position_dodge(width=0.75)) + 
     #geom_text_repel(aes(label = labs_caz), force = 0.2, nudge_x = -0.3, direction = "y", box.padding = 0, segment.size = 0.2, size = 4.5) +
     #geom_text_repel(aes(label = labs_pip), force = 0.2, nudge_x = 0.3, direction = "y", box.padding = 0, segment.size = 0.2, size = 4.5) +
-    labs(x = "Mutant Positions", y = expression(Delta*'Fold-Change')) +
+    labs(x = "Mutant Positions", y = 'delta Fold-Change') +
     facet_wrap(~ positions, scales="free_x") +
     theme_classic() +
     theme(text = element_text(size=22),
-          axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(margin = margin(t = 0, r = 40, b = 0, l = 0)),
+          axis.title.x = element_text(margin = margin(t = 40, r = 0, b = 0, l = 0)),
           axis.text.x = element_blank(),
           axis.ticks.x = element_blank(),
           strip.background = element_blank(),
           axis.line.x = element_blank(),
           panel.spacing = unit(-0.2, "lines")) 
 
-ggplotly(p, tooltip = c("identity"))
+
 ```
 
+```{r, fig.width=14,fig.height=11, echo=F}
+ggplotly(p, tooltip = c("identity"))
+```
